@@ -1,0 +1,16 @@
+package com.example.nutritracker.example.controllers;
+
+import androidx.room.Dao;
+import androidx.room.Query;
+
+import com.example.nutritracker.example.models.Food;
+
+import java.util.List;
+
+@Dao
+public interface FoodDao {
+
+    @Query("SELECT * FROM Food")
+    List<Food> getAll();
+
+}
