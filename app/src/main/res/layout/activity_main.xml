@@ -29,29 +29,22 @@
             android:background="@color/material_dynamic_primary20"
             android:text="Food"
             android:textColor="@color/white"
-            android:textSize="16sp"></androidx.appcompat.widget.AppCompatButton>
+            android:textSize="16sp"/>
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/buttonWeight"
+        <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/nutritionChart"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_marginHorizontal="4dp"
-            android:layout_marginTop="16dp"
-            android:background="@color/material_dynamic_primary20"
-            android:text="Weight"
-            android:textColor="@color/white"
-            android:textSize="16sp"></androidx.appcompat.widget.AppCompatButton>
+            android:layout_height="300dp"
+            android:layout_margin="16dp"/>
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/buttonWater"
+        <TextView
+            android:id="@+id/recommendationText"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_marginHorizontal="4dp"
-            android:layout_marginTop="16dp"
-            android:background="@color/material_dynamic_primary20"
-            android:text="Water"
-            android:textColor="@color/white"
-            android:textSize="16sp"></androidx.appcompat.widget.AppCompatButton>
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:textAlignment="center"
+            android:textSize="16sp"
+            android:textStyle="bold"/>
 
     </LinearLayout>
 

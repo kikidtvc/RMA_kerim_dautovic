@@ -3,6 +3,8 @@ package com.example.nutritracker.example.activities;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -33,6 +35,9 @@ import java.util.concurrent.Executors;
 public class FoodActivity extends AppCompatActivity {
 
     public Food selectedFood = null;
+    private TextInputEditText inputMealSize;
+    private TextView textCalories, textFats, textCarbs, textSugars, textProteins;
+    private FoodDatabase db;
 
     @SuppressLint("DefaultLocale")
     @Override
@@ -45,8 +50,8 @@ public class FoodActivity extends AppCompatActivity {
             return insets;
         });
 
-        FoodDatabase db = Room.databaseBuilder(getApplicationContext(),
-                FoodDatabase.class, "foodDB").build();
+        db = Room.databaseBuilder(getApplicationContext(),
+                FoodDatabase.class, "foodDB").fallbackToDestructiveMigration(true).build();
 
         List<Food> allFoods = new dbPopulator().insertAll();
 
@@ -62,7 +67,6 @@ public class FoodActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-
         Set<String> nameSet = new LinkedHashSet<>();
         for (Food food : allFoods) {
             nameSet.add(food.getName());
@@ -77,16 +81,28 @@ public class FoodActivity extends AppCompatActivity {
 
         fieldName.setAdapter(adapter);
         fieldName.setThreshold(1);
-        TextInputEditText inputMealSize = findViewById(R.id.sizeEnter);
+        inputMealSize = findViewById(R.id.sizeEnter);
 
-        TextView textCalories = findViewById(R.id.textCalories);
-        TextView textFats = findViewById(R.id.textFats);
-        TextView textCarbs = findViewById(R.id.textCarbs);
-        TextView textSugars = findViewById(R.id.textSugars);
-        TextView textProteins = findViewById(R.id.textProteins);
+        textCalories = findViewById(R.id.textCalories);
+        textFats = findViewById(R.id.textFats);
+        textCarbs = findViewById(R.id.textCarbs);
+        textSugars = findViewById(R.id.textSugars);
+        textProteins = findViewById(R.id.textProteins);
+
+        inputMealSize.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                updateNutrientValues();
+            }
+        });
 
         fieldName.setOnItemClickListener((parent, view, position, id) -> {
-
             String selectedName = (String) parent.getItemAtPosition(position);
             selectedFood = null;
 
@@ -96,30 +112,14 @@ public class FoodActivity extends AppCompatActivity {
                     break;
                 }
             }
-
-            if (selectedFood != null) {
-                String sizeText = inputMealSize.getText() != null ? inputMealSize.getText().toString() : "1";
-                double multiplier;
-                try {
-                    multiplier = Double.parseDouble(sizeText);
-                } catch (NumberFormatException e) {
-                    multiplier = 1.0 / 1000;
-                }
-
-                textCalories.setText(String.format("%.1f", selectedFood.getCalories() * multiplier));
-                textFats.setText(String.format("%.1f", selectedFood.getFats() * multiplier));
-                textCarbs.setText(String.format("%.1f", selectedFood.getCarbs() * multiplier));
-                textSugars.setText(String.format("%.1f", selectedFood.getSugars() * multiplier));
-                textProteins.setText(String.format("%.1f", selectedFood.getProtein() * multiplier));
-            }
+            updateNutrientValues();
         });
 
         buttonLog.setOnClickListener(v -> {
             String mealSizeText = inputMealSize.getText() != null ? inputMealSize.getText().toString() : "1";
 
             if (selectedFood == null) {
-
-                Log.d("FOOD", "DEAD");
+                Toast.makeText(FoodActivity.this, "Please select a food first", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -135,9 +135,10 @@ public class FoodActivity extends AppCompatActivity {
 
             Executors.newSingleThreadExecutor().execute(() -> {
                 db.foodLogDao().insert(foodLog);
+                runOnUiThread(() -> Toast.makeText(FoodActivity.this,
+                        "Logged " + mealSize + "g of " + selectedFood.getName(),
+                        Toast.LENGTH_SHORT).show());
             });
-
-            Log.d("FOOD_LOG", "Logged: " + foodLog.getUid() + " x" + foodLog.foodUID);
         });
 
         buttonHome.setOnClickListener(v -> finish());
@@ -145,14 +146,34 @@ public class FoodActivity extends AppCompatActivity {
         textTitle.setOnClickListener(v -> finish());
 
         buttonSettings.setOnClickListener(v -> {
-
-            List<FoodLog> logs = db.foodLogDao().getAll();
-
-            for (FoodLog log : logs) {
-
-                Log.d("FOOD_LOG", "logs: " + log.getUid() + " - " + log.foodUID);
-            }
-            Toast.makeText(getApplicationContext(), "This a toast message", Toast.LENGTH_LONG).show();
+            startActivity(new Intent(FoodActivity.this, SettingsActivity.class));
         });
+    }
+
+    @SuppressLint("DefaultLocale")
+    private void updateNutrientValues() {
+        if (selectedFood != null) {
+            String sizeText = inputMealSize.getText() != null ? inputMealSize.getText().toString() : "1";
+            double multiplier;
+            try {
+                multiplier = Double.parseDouble(sizeText) / 100;
+            } catch (NumberFormatException e) {
+                multiplier = 1.0;
+            }
+
+            textCalories.setText(String.format("%.1f", selectedFood.getCalories() * multiplier));
+            textFats.setText(String.format("%.1f", selectedFood.getFats() * multiplier));
+            textCarbs.setText(String.format("%.1f", selectedFood.getCarbs() * multiplier));
+            textSugars.setText(String.format("%.1f", selectedFood.getSugars() * multiplier));
+            textProteins.setText(String.format("%.1f", selectedFood.getProtein() * multiplier));
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (db != null) {
+            db.close();
+        }
     }
 }

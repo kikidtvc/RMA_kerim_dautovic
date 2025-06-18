@@ -12,6 +12,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.NutriTracker"
         tools:targetApi="31">
+        <activity
+            android:name=".example.activities.SettingsActivity"
+            android:label="Settings"
+            android:parentActivityName=".example.activities.FoodActivity">
+        </activity>
         <activity android:name=".example.activities.HistoryActivity" />
         <activity
             android:name=".example.activities.WaterActivity"

@@ -15,9 +15,9 @@ public interface FoodLogDao {
     @Query("SELECT * FROM FoodLog")
     List<FoodLog> getAll();
 
+    @Query("SELECT * FROM FoodLog ORDER BY logTime DESC LIMIT 5")
+    List<FoodLog> getLastFiveLogs();
+
     @Insert
     void insert(FoodLog FoodLog);
-
-    @Query("SELECT * FROM FoodLog ORDER BY uid DESC LIMIT 5")
-    List<FoodLog> getLastFive();
 }

@@ -4,6 +4,8 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import java.util.Date;
+
 @Entity(tableName = "FoodLog")
 public class FoodLog {
 
@@ -16,10 +18,19 @@ public class FoodLog {
     @ColumnInfo(name = "size")
     public int size;
 
+    @ColumnInfo(name = "logTime")
+    public long logTime;
+
     public FoodLog(int foodUID, int size) {
 
         this.foodUID = foodUID;
         this.size = size;
+        this.logTime = new Date().getTime();
+    }
+
+    public long getLogTime() {
+
+        return this.logTime;
     }
 
     public int getUid() {
